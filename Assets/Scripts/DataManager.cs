@@ -9,10 +9,12 @@ public class DataManager : MonoBehaviour
     public string playerName;
     public int highScore;
 
-    string savePath = Application.persistentDataPath + "/savefile.json";
+    string savePath;
 
     private void Awake()
     {
+        savePath = Application.persistentDataPath + "/savefile.json"; 
+
         if (Instance != null)
         {
             Destroy(gameObject);
@@ -22,7 +24,7 @@ public class DataManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
         
-        if (playerName == null)
+        if (playerName.Length == 0)
         {
             playerName = "Player";
         }
@@ -54,6 +56,11 @@ public class DataManager : MonoBehaviour
         File.WriteAllText(savePath, json);
     }
 
+    public void UpdateName(string name)
+    {
+        playerName = name;
+    }
+
     public void LoadScore()
     {
         if (File.Exists(savePath))
@@ -64,5 +71,12 @@ public class DataManager : MonoBehaviour
             highScore = data.score;
             playerName = data.name;
         }
+    }
+
+    public void ResetHighScore()
+    {
+        highScore = 0;
+        playerName = "Player";
+        SaveScore();
     }
 }

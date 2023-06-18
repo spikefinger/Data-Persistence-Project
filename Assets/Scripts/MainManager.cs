@@ -11,7 +11,13 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
+    public Text PlayerNameText;
     public GameObject GameOverText;
+    public GameObject PlayerName;
+
+    private string playerName;
+    private int bestScore;
     
     private bool m_Started = false;
     private int m_Points;
@@ -36,6 +42,13 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        DataManager.Instance.LoadScore();
+
+        bestScore = DataManager.Instance.highScore;
+        playerName = DataManager.Instance.playerName;
+
+        UpdateScoreText();
     }
 
     private void Update()
@@ -60,23 +73,57 @@ public class MainManager : MonoBehaviour
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            SceneManager.LoadScene(0);
+        }
+        
+        if (Input.GetKeyDown(KeyCode.Return) && m_GameOver && PlayerName.activeSelf)
+        {
+            SaveNameInput();
+        }
     }
 
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
-
-        // If new score is higher than current high score, update high score
-        if (m_Points > DataManager.Instance.highScore)
-        {
-            DataManager.Instance.highScore = m_Points;
-        }
+        UpdateScoreText();
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+
+        if (m_Points > DataManager.Instance.highScore)
+        {
+            DataManager.Instance.highScore = m_Points;
+            PlayerName.SetActive(true);
+        }
+    }
+
+    public void SaveNameInput()
+    {
+        playerName = PlayerNameText.text;
+
+        DataManager.Instance.playerName = playerName;
+        Debug.Log(playerName);
+        PlayerName.SetActive(false);
+        bestScore = m_Points;
+        DataManager.Instance.UpdateName(playerName);
+        DataManager.Instance.SaveScore();
+        UpdateScoreText();
+    }
+
+    public void SaveScoreInfo()
+    {
+        DataManager.Instance.SaveScore();
+    }
+
+    public void UpdateScoreText()
+    {
+        ScoreText.text = $"Score : {m_Points}";
+        BestScoreText.text = $"Best Score : {bestScore} Name : {playerName}";
     }
 }
